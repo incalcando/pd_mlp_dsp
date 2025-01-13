@@ -9,10 +9,75 @@
 #include <ctime>
 #include <sstream>
 #include <type_traits>
+#include <numeric>
 
 #include "idsp_addons.hpp"
 
+/// MLP 2 hidden layers
 
+
+template <size_t IN_SIZE, size_t H1_SIZE, size_t H2_SIZE, size_t OUT_SIZE>
+class MLP_2LYR {
+public:
+    MLP_2LYR(size_t epochs);
+    idsp::c_vector<double, OUT_SIZE> forward(const idsp::c_vector<double, IN_SIZE>& inputs, bool linear_output = false);
+    void train(
+            const idsp::c_vector<idsp::c_vector<double, IN_SIZE>, 99>& inputs, 
+            const idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, 99>& targets, 
+            double learning_rate, int epochs
+            );
+    idsp::c_vector<double, OUT_SIZE> generate_output();
+    void fill_input_vec(int idx, double f) { this->net_in[idx] = f; this->generate_output(); }
+    void clear_data();
+    void accumulate_data(const idsp::c_vector<double, IN_SIZE>& inputs, const idsp::c_vector<double, OUT_SIZE>& targets);
+    void retrain(double learning_rate, int epochs);
+    void set_training_amount(size_t amount) { training_epochs = amount; }
+    idsp::c_vector<double, IN_SIZE> find_closest_data_set(const idsp::c_vector<double, OUT_SIZE>& target);
+
+private:
+    size_t training_epochs;
+
+    idsp::c_vector<double, IN_SIZE> net_in;
+
+    idsp::c_vector<idsp::c_vector<double, H1_SIZE>, IN_SIZE> weight_in_h1;
+    idsp::c_vector<idsp::c_vector<double, H2_SIZE>, H1_SIZE> weight_h1_h2;
+    idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, H2_SIZE> weight_h2_out;
+
+    idsp::c_vector<double, H1_SIZE> bias_h1;
+    idsp::c_vector<double, H2_SIZE> bias_h2;
+    idsp::c_vector<double, OUT_SIZE> bias_out;
+
+    idsp::c_vector<idsp::c_vector<double, IN_SIZE>, 99> accumulated_inputs;
+    idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, 99> accumulated_targets;
+    size_t accumulated_data_size;
+
+    void initialize_weights_and_biases();
+
+    // Activation functions
+    inline double tanh_activation(double x) {
+        return std::tanh(x);
+    }
+
+    inline double tanh_derivative(double x) {
+        return 1.0 - std::tanh(x) * std::tanh(x);
+    }
+    
+    inline double get_random_bipolar_normalised() {
+        return ((double)rand() / RAND_MAX) * 2 - 1;
+    }
+
+    // Mean Squared Error loss function
+    double mean_squared_error(const  idsp::c_vector<double, 6>& predicted, const  idsp::c_vector<double, 6>& target) {  
+        double error = 0.0;
+        for (size_t i = 0; i < predicted.size(); ++i) {
+            error += (predicted[i] - target[i]) * (predicted[i] - target[i]);
+        }
+        return error / predicted.size();
+    }
+};
+
+
+/// MLP 3 hidden layers
 
 template <size_t IN_SIZE, size_t H1_SIZE, size_t H2_SIZE, size_t H3_SIZE, size_t OUT_SIZE>
 class MLP_3LYR {
@@ -140,6 +205,65 @@ private:
         return error / predicted.size();
     }
 };
+
+// template <size_t IN_SIZE, size_t OUT_SIZE, size_t... H_SIZES>
+// class MLP_VAR {
+// public:
+//     MLP_VAR(size_t epochs);
+//     idsp::c_vector<double, OUT_SIZE> forward(const idsp::c_vector<double, IN_SIZE>& inputs, bool linear_output = false);
+//     void train(
+//             const idsp::c_vector<idsp::c_vector<double, IN_SIZE>, 99>& inputs, 
+//             const idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, 99>& targets, 
+//             double learning_rate, int epochs
+//             );
+//     idsp::c_vector<double, OUT_SIZE> generate_output();
+//     void fill_input_vec(int idx, double f) { this->net_in[idx] = f; this->generate_output(); }
+//     void clear_data();
+//     void accumulate_data(const idsp::c_vector<double, IN_SIZE>& inputs, const idsp::c_vector<double, OUT_SIZE>& targets);
+//     void retrain(double learning_rate, int epochs);
+//     void set_training_amount(size_t amount) { training_epochs = amount; }
+//     idsp::c_vector<double, IN_SIZE> find_closest_data_set(const idsp::c_vector<double, OUT_SIZE>& target);
+
+// private:
+//     size_t training_epochs;
+
+//     idsp::c_vector<double, IN_SIZE> net_in;
+
+//     std::tuple<idsp::c_vector<idsp::c_vector<double, H_SIZES>, IN_SIZE>...> weights_in;
+//     std::tuple<idsp::c_vector<idsp::c_vector<double, H_SIZES>, H_SIZES>...> weights_hidden;
+//     idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, std::get<sizeof...(H_SIZES) - 1>(std::tuple<H_SIZES...>{})> weight_out;
+
+//     std::tuple<idsp::c_vector<double, H_SIZES>...> biases_hidden;
+//     idsp::c_vector<double, OUT_SIZE> bias_out;
+
+//     idsp::c_vector<idsp::c_vector<double, IN_SIZE>, 99> accumulated_inputs;
+//     idsp::c_vector<idsp::c_vector<double, OUT_SIZE>, 99> accumulated_targets;
+//     size_t accumulated_data_size;
+
+//     void initialize_weights_and_biases();
+
+//     // Activation functions
+//     inline double tanh_activation(double x) {
+//         return std::tanh(x);
+//     }
+
+//     inline double tanh_derivative(double x) {
+//         return 1.0 - std::tanh(x) * std::tanh(x);
+//     }
+    
+//     inline double get_random_bipolar_normalised() {
+//         return ((double)rand() / RAND_MAX) * 2 - 1;
+//     }
+
+//     // Mean Squared Error loss function
+//     double mean_squared_error(const idsp::c_vector<double, 6>& predicted, const idsp::c_vector<double, 6>& target) {  
+//         double error = 0.0;
+//         for (size_t i = 0; i < predicted.size(); ++i) {
+//             error += (predicted[i] - target[i]) * (predicted[i] - target[i]);
+//         }
+//         return error / predicted.size();
+//     }
+// };
 
 // Include the template implementation file
 #include "mlp.tpp"
