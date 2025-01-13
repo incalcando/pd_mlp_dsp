@@ -54,15 +54,15 @@ private:
     void initialize_weights_and_biases();
 
     // Activation functions
-    double tanh_activation(double x) {
+    inline double tanh_activation(double x) {
         return std::tanh(x);
     }
 
-    double tanh_derivative(double x) {
+    inline double tanh_derivative(double x) {
         return 1.0 - std::tanh(x) * std::tanh(x);
     }
     
-    double get_random_bipolar_normalised() {
+    inline double get_random_bipolar_normalised() {
         return ((double)rand() / RAND_MAX) * 2 - 1;
     }
 
@@ -117,16 +117,17 @@ private:
 
     void initialize_weights_and_biases();
 
+    
     // Activation functions
-    double tanh_activation(double x) {
+    inline double tanh_activation(double x) {
         return std::tanh(x);
     }
 
-    double tanh_derivative(double x) {
+    inline double tanh_derivative(double x) {
         return 1.0 - std::tanh(x) * std::tanh(x);
     }
 
-    double get_random_bipolar_normalised() {
+    inline double get_random_bipolar_normalised() {
         return ((double)rand() / RAND_MAX) * 2 - 1;
     }
 
