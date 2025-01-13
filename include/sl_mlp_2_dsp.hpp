@@ -2,11 +2,13 @@
 #define sl_mlp_2_DSP_HPP
 
 #include "idsp/buffer_types.hpp"
-#include "mlp_tanh.hpp"
+#include "mlp.hpp"
 #include <array> // Added for std::array
 
 static constexpr size_t MLP_INPUT_SIZE = 3;
-static constexpr std::array<size_t,3> MLP_HIDDEN_LAYERS{15, 12, 15};
+static constexpr std::array<size_t,4> MLP_HIDDEN_LAYERS{15, 12, 13, 15};
+// static constexpr std::array<size_t,3> MLP_HIDDEN_LAYERS{15, 12, 15};
+
 static constexpr size_t MLP_OUTPUT_SIZE = 6;
 static constexpr size_t MLP_TRAINING_EPOCHS = 1000;
 
@@ -46,7 +48,9 @@ class Sl_mlp_2
     private:
         float gain;
         int training_epochs;
-        MLP_TANH<MLP_INPUT_SIZE, MLP_HIDDEN_LAYERS[0], MLP_HIDDEN_LAYERS[1], MLP_HIDDEN_LAYERS[2], MLP_OUTPUT_SIZE> mlp;
+        // MLP_4LYR<MLP_INPUT_SIZE, MLP_HIDDEN_LAYERS[0], MLP_HIDDEN_LAYERS[1], MLP_HIDDEN_LAYERS[2], MLP_HIDDEN_LAYERS[3], MLP_OUTPUT_SIZE> mlp;
+        MLP_3LYR<MLP_INPUT_SIZE, MLP_HIDDEN_LAYERS[0], MLP_HIDDEN_LAYERS[1], MLP_HIDDEN_LAYERS[2], MLP_OUTPUT_SIZE> mlp;
+
 };
 
 #endif // sl_mlp_2_DSP_HPP
